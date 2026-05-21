@@ -74,9 +74,10 @@ LSTM_FEATURE_COLUMNS = (
 )
 
 # ── LSTM settings ──────────────────────────────────────────────────
-LSTM_SEQUENCE_LENGTH = 30   # 30 seconds of 1-second granularity data
+LSTM_SEQUENCE_LENGTH = 60   # 60 time steps (~1 min of 1-second granularity data)
 LSTM_EPOCHS = 100
-LSTM_BATCH_SIZE = 256
-LSTM_HIDDEN_SIZE = 128
+LSTM_BATCH_SIZE = 64
+LSTM_HIDDEN_SIZE = 64
 LSTM_NUM_LAYERS = 2
-LSTM_LEARNING_RATE = 0.002
+LSTM_LEARNING_RATE = 0.001
+LSTM_SESSION_GAP_SECONDS = 10  # gaps > 10 s indicate a new drive-test session

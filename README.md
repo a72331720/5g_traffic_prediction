@@ -18,7 +18,7 @@ Course project: data analysis and machine learning based prediction of 5G networ
 │   ├── data_loader.py      # Load raw data
 │   ├── preprocessing.py    # Clean data and build features
 │   ├── analysis.py         # Traffic pattern / peak-hour analysis
-│   ├── model.py            # Linear Regression, Random Forest
+│   ├── model.py            # Linear Regression, Random Forest, LSTM
 │   ├── evaluation.py       # RMSE / MAE / R²
 │   ├── visualization.py    # Plotting helpers
 │   └── main.py             # End-to-end pipeline entry point
@@ -30,10 +30,10 @@ Course project: data analysis and machine learning based prediction of 5G networ
 
 | Member      | Role                                     |
 |-------------|------------------------------------------|
-| LIU ZHENYI  | Machine learning model, data preprocessing |
-| REN XUHUI   | Data analysis and visualization          |
-| YANG XIAOLU | Literature research, report writing, record manager |
-| WANG JIARUI | Presentation slides and documentation    |
+| WANG JIARUI | Code architecture, data preprocessing, video production |
+| REN XUHUI   | Report writing                           |
+| LIU ZHENYI  | Dataset search                           |
+| YANG XIAOLU | Presentation slides (PPT)                |
 
 ## Dataset
 
@@ -47,9 +47,15 @@ Course project: data analysis and machine learning based prediction of 5G networ
 
 | Model            | RMSE      | MAE     | R²     |
 |------------------|-----------|---------|--------|
-| Linear Regression | 28,943   | 13,043  | 0.799  |
-| Random Forest    | 19,580   | 8,077   | 0.908  |
-| LSTM             | 45,268   | 21,097  | 0.509  |
+| Linear Regression | 28,954   | 13,051  | 0.799  |
+| Random Forest    | 19,588   | 8,082   | 0.908  |
+| LSTM             | 47,572   | 22,265  | 0.460  |
+
+Random Forest is the recommended model. This dataset is feature-driven rather
+than sequence-driven: the strongest predictive signal is lag-1 autocorrelation
+(0.89), which tree-based models exploit directly via engineered lag/rolling
+features. Recurrent architectures must learn the same patterns from raw noisy
+RF measurements over a limited window, making them a less natural fit here.
 
 ## Quick Start
 

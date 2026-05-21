@@ -109,11 +109,27 @@ class LSTMModel(nn.Module):
         return self.fc(out).squeeze(-1)
 
 
-def prepare_lstm_sequences(X: np.ndarray, y: np.ndarray | None, seq_len: int):
-    """Slide a window of `seq_len` over X to produce (samples, seq_len, features)."""
+def prepare_lstm_sequences(X: np.ndarray, y: np.ndarray | None, seq_len: int,
+                           timestamps: "pd.Series | None" = None):
+    """Slide a window of `seq_len` over X to produce (samples, seq_len, features).
+
+    If `timestamps` is provided, sequences that cross a session boundary
+    (gap > LSTM_SESSION_GAP_SECONDS) are skipped — they represent
+    time-steps from different drive tests and contaminate training.
+    """
+    n = len(X)
+    if timestamps is not None and n > seq_len:
+        gap = pd.Timedelta(seconds=config.LSTM_SESSION_GAP_SECONDS)
+        # session_id changes at every gap — sequence valid only if uniform
+        session_id = (timestamps.diff() > gap).cumsum().values
+    else:
+        session_id = None
+
     Xs = []
     ys = [] if y is not None else None
-    for i in range(len(X) - seq_len):
+    for i in range(n - seq_len):
+        if session_id is not None and session_id[i] != session_id[i + seq_len]:
+            continue
         Xs.append(X[i : i + seq_len])
         if y is not None:
             ys.append(y[i + seq_len])
@@ -122,37 +138,61 @@ def prepare_lstm_sequences(X: np.ndarray, y: np.ndarray | None, seq_len: int):
     return np.array(Xs)
 
 
-def train_lstm(X_train, y_train, X_test, y_test):
-    """Train an LSTM model and return (model, scaler, y_scaler, train_losses, val_losses, y_test_orig)."""
+def train_lstm(X_train, y_train, X_test, y_test,
+               train_ts: "pd.Series | None" = None,
+               test_ts: "pd.Series | None" = None):
+    """Train an LSTM model and return (model, scaler, y_scaler, train_losses, val_losses, y_test_orig).
+
+    Key fixes vs. baseline:
+      - session-boundary detection: sequences spanning a time gap are skipped
+      - val split BEFORE sequence creation to eliminate train/val time overlap
+      - shuffle=False in DataLoader to preserve temporal order
+      - ReduceLROnPlateau scheduler for better convergence
+    """
     seq_len = config.LSTM_SEQUENCE_LENGTH
     epochs = config.LSTM_EPOCHS
     batch_size = config.LSTM_BATCH_SIZE
     lr = config.LSTM_LEARNING_RATE
     patience = 15
 
+    # Feature scaling
     scaler = StandardScaler()
     X_train_sc = scaler.fit_transform(X_train)
     X_test_sc = scaler.transform(X_test)
 
+    # Target scaling (direct kbps, no log transform)
+    y_train_np = np.array(y_train, dtype=np.float32)
+    y_test_np = np.array(y_test, dtype=np.float32)
     y_scaler = StandardScaler()
-    y_train_np = y_scaler.fit_transform(
-        np.array(y_train, dtype=np.float32).reshape(-1, 1)
-    ).ravel()
+    y_train_scaled = y_scaler.fit_transform(y_train_np.reshape(-1, 1)).ravel()
 
-    X_train_seq, y_train_seq = prepare_lstm_sequences(X_train_sc, y_train_np, seq_len)
+    # Chronological val split BEFORE creating sequences (avoids overlap leakage)
+    n_train = len(X_train_sc)
+    val_size = max(int(n_train * 0.1), seq_len + 1)
+    train_end = n_train - val_size
 
-    # 10% validation split (chronological — no shuffle)
-    val_size = int(len(X_train_seq) * 0.1)
-    X_val_seq = X_train_seq[-val_size:]
-    y_val_seq = y_train_seq[-val_size:]
-    X_train_seq = X_train_seq[:-val_size]
-    y_train_seq = y_train_seq[:-val_size]
+    X_tr_raw = X_train_sc[:train_end]
+    y_tr_raw = y_train_scaled[:train_end]
+    X_val_raw = X_train_sc[train_end:]
+    y_val_raw = y_train_scaled[train_end:]
+    tr_ts = train_ts.iloc[:train_end] if train_ts is not None else None
+    val_ts = train_ts.iloc[train_end:] if train_ts is not None else None
+
+    # Create sequences with session-boundary filtering
+    X_train_seq, y_train_seq = prepare_lstm_sequences(
+        X_tr_raw, y_tr_raw, seq_len, timestamps=tr_ts)
+    X_val_seq, y_val_seq = prepare_lstm_sequences(
+        X_val_raw, y_val_raw, seq_len, timestamps=val_ts)
+    X_test_seq, y_test_seq = prepare_lstm_sequences(
+        X_test_sc, y_test_np, seq_len, timestamps=test_ts)
+
+    print(f"  Train seqs: {len(X_train_seq)}  Val seqs: {len(X_val_seq)}  Test seqs: {len(X_test_seq)}")
 
     train_ds = TensorDataset(
         torch.tensor(X_train_seq, dtype=torch.float32),
         torch.tensor(y_train_seq, dtype=torch.float32),
     )
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=False)
 
     n_features = X_train_sc.shape[1]
     model = LSTMModel(
@@ -162,6 +202,9 @@ def train_lstm(X_train, y_train, X_test, y_test):
     )
     criterion = nn.MSELoss()
     optimiser = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimiser, mode="min", factor=0.5, patience=5
+    )
 
     train_losses, val_losses = [], []
     best_val_loss = float("inf")
@@ -185,8 +228,12 @@ def train_lstm(X_train, y_train, X_test, y_test):
         model.eval()
         with torch.no_grad():
             val_preds = model(torch.tensor(X_val_seq, dtype=torch.float32))
-            val_loss = criterion(val_preds, torch.tensor(y_val_seq, dtype=torch.float32)).item()
+            val_loss = criterion(
+                val_preds, torch.tensor(y_val_seq, dtype=torch.float32)
+            ).item()
         val_losses.append(val_loss)
+
+        scheduler.step(val_loss)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -203,16 +250,21 @@ def train_lstm(X_train, y_train, X_test, y_test):
             break
 
     model.load_state_dict(best_state)
-    y_test_orig = np.array(y_test[seq_len:], dtype=np.float32)
+    y_test_orig = y_test_seq.astype(np.float32)
     return model, scaler, y_scaler, train_losses, val_losses, y_test_orig
 
 
-def predict_lstm(model, scaler, X, y_scaler=None, seq_len=None):
-    """Generate predictions from a trained LSTM. Returns 1-D array in original scale."""
+def predict_lstm(model, scaler, X, y_scaler=None, seq_len=None,
+                  timestamps: "pd.Series | None" = None):
+    """Generate predictions from a trained LSTM. Returns 1-D array in original kbps scale.
+
+    Applies session-boundary filtering if timestamps provided, matching the
+    training-time sequence creation so predictions align with y_test from train_lstm.
+    """
     if seq_len is None:
         seq_len = config.LSTM_SEQUENCE_LENGTH
     X_sc = scaler.transform(X)
-    X_seq = prepare_lstm_sequences(X_sc, None, seq_len)
+    X_seq = prepare_lstm_sequences(X_sc, None, seq_len, timestamps=timestamps)
 
     model.eval()
     with torch.no_grad():

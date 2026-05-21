@@ -86,8 +86,14 @@ def run():
     print("  -> LSTM (PyTorch)")
     X_train_lstm = X_train[config.LSTM_FEATURE_COLUMNS]
     X_test_lstm = X_test[config.LSTM_FEATURE_COLUMNS]
+
+    # Timestamps for session-boundary detection (cross-session = garbage sequences)
+    train_ts = df.loc[X_train.index, config.TIMESTAMP_COLUMN]
+    test_ts = df.loc[X_test.index, config.TIMESTAMP_COLUMN]
+
     lstm_model, lstm_scaler, lstm_y_scaler, lstm_losses, lstm_val_losses, y_test_lstm = model.train_lstm(
-        X_train_lstm, y_train, X_test_lstm, y_test
+        X_train_lstm, y_train, X_test_lstm, y_test,
+        train_ts=train_ts, test_ts=test_ts,
     )
     visualization.plot_lstm_loss(lstm_losses, lstm_val_losses, save_name="lstm_loss.png")
 
@@ -100,13 +106,15 @@ def run():
 
     lr_preds = lr.predict(X_test)
     rf_preds = rf.predict(X_test)
-    lstm_preds = model.predict_lstm(lstm_model, lstm_scaler, X_test_lstm, y_scaler=lstm_y_scaler)
+    lstm_preds = model.predict_lstm(lstm_model, lstm_scaler, X_test_lstm,
+                                     y_scaler=lstm_y_scaler, timestamps=test_ts)
 
-    # All models evaluated on the same truncated test set (LSTM discards first seq_len rows)
+    # Evaluate on comparable test windows (LSTM discards seq_len rows + session breaks)
     seq_len = config.LSTM_SEQUENCE_LENGTH
     y_test_eval = y_test[seq_len:]
     lr_metrics = evaluation.evaluate(y_test_eval, lr_preds[seq_len:])
     rf_metrics = evaluation.evaluate(y_test_eval, rf_preds[seq_len:])
+    # y_test_lstm and lstm_preds are both session-boundary-filtered → aligned
     lstm_metrics = evaluation.evaluate(y_test_lstm, lstm_preds)
 
     evaluation.print_metrics("LinearRegression", lr_metrics)
