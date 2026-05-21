@@ -37,7 +37,7 @@ Course project: data analysis and machine learning based prediction of 5G networ
 
 ## Dataset
 
-- **Source**: [uccmisl/5Gdataset](https://www.kaggle.com/datasets/chengfeng1/5g-network-drive-test-data-uccmisl5gdataset) — real 5G drive-test traces
+- **Source**: [uccmisl/5Gdataset](https://github.com/uccmisl/5Gdataset) — real 5G drive-test traces
 - **Paper**: "Beyond Throughput: The Next Generation a 5G Dataset with Channel and Context Metrics" (Raca et al., ACM MMSys 2020)
 - **Size**: 188,711 rows, 1-second granularity, 27 dates (2019-11-20 to 2020-02-27)
 - **Features**: RSRP, RSRQ, SNR, CQI, RSSI, DL/UL bitrate, Speed, Location
