@@ -1,8 +1,8 @@
-# 5G Network Traffic Prediction
+# 📡 5G Network Traffic Prediction
 
 Course project: data analysis and machine learning based prediction of 5G network traffic.
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 5g_traffic_prediction/
@@ -26,7 +26,7 @@ Course project: data analysis and machine learning based prediction of 5G networ
 └── README.md
 ```
 
-## Team & Roles
+## 👥 Team & Roles
 
 | Member      | Role                                     |
 |-------------|------------------------------------------|
@@ -35,7 +35,7 @@ Course project: data analysis and machine learning based prediction of 5G networ
 | REN XUHUI   | Report writing                           |
 | YANG XIAOLU | Presentation slides (PPT)                |
 
-## Dataset
+## 📊 Dataset
 
 - **Source**: [uccmisl/5Gdataset](https://github.com/uccmisl/5Gdataset) — real 5G drive-test traces
 - **Paper**: "Beyond Throughput: The Next Generation a 5G Dataset with Channel and Context Metrics" (Raca et al., ACM MMSys 2020)
@@ -43,28 +43,28 @@ Course project: data analysis and machine learning based prediction of 5G networ
 - **Features**: RSRP, RSRQ, SNR, CQI, RSSI, DL/UL bitrate, Speed, Location
 - **Target**: DL_bitrate (mean 10.8 Mbps, max 533 Mbps)
 
-## Model Performance
+## 📈 Model Performance
 
 | Model            | RMSE      | MAE     | R²     |
 |------------------|-----------|---------|--------|
 | Linear Regression | 28,954   | 13,051  | 0.799  |
-| Random Forest    | 19,588   | 8,082   | 0.908  |
+| ⭐ Random Forest  | 19,588   | 8,082   | 0.908  |
 | LSTM             | 47,572   | 22,265  | 0.460  |
 
-Random Forest is the recommended model. This dataset is feature-driven rather
+✅ **Random Forest is the recommended model.** This dataset is feature-driven rather
 than sequence-driven: the strongest predictive signal is lag-1 autocorrelation
 (0.89), which tree-based models exploit directly via engineered lag/rolling
 features. Recurrent architectures must learn the same patterns from raw noisy
 RF measurements over a limited window, making them a less natural fit here.
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 pip install -r requirements.txt
 python -m src.main
 ```
 
-## Timeline
+## 📅 Timeline
 
 - Week 1–2: Dataset collection & initial research
 - Week 3–4: Data preprocessing & traffic pattern analysis
