@@ -87,6 +87,19 @@ def build_lstm_features(df_raw: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def build_lstm_lag_features(df_raw: pd.DataFrame) -> pd.DataFrame:
+    """Feature pipeline for LSTM with engineered features: clean → one-hot → time → lag → rolling.
+
+    Otherwise identical to build_features() but uses one-hot instead of label encoding.
+    """
+    df = clean(df_raw)
+    df = one_hot_encode(df)
+    df = add_time_features(df)
+    df = add_lag_features(df)
+    df = add_rolling_features(df)
+    return df
+
+
 # ── Master pipeline ──────────────────────────────────────────────
 def build_features(df: pd.DataFrame) -> pd.DataFrame:
     """Full preprocessing pipeline: clean → encode → time → lag → rolling."""

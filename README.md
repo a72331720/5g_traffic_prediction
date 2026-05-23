@@ -51,7 +51,8 @@ Course project: data analysis and machine learning based prediction of 5G networ
 |------------------|-----------|---------|--------|
 | Linear Regression | 28,954   | 13,051  | 0.799  |
 | ⭐ Random Forest  | 19,588   | 8,082   | 0.908  |
-| LSTM             | 43,995   | 21,393  | 0.538  |
+| LSTM             | 44,964   | 21,489  | 0.518  |
+| LSTM + lag       | 31,843   | 14,751  | 0.758  |
 
 ✅ **Random Forest is the recommended model.** This dataset is feature-driven rather
 than sequence-driven: the strongest predictive signal is lag-1 autocorrelation

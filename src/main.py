@@ -106,9 +106,30 @@ def run():
     )
     visualization.plot_lstm_loss(lstm_losses, lstm_val_losses, save_name="lstm_loss.png")
 
+    print("  -> LSTM + lag/rolling (one-hot + engineered features)")
+    df_lstm_lag = preprocessing.build_lstm_lag_features(df_raw)
+    one_hot_cols_lag = [c for c in df_lstm_lag.columns
+                        if any(c.startswith(f"{cat}_") for cat in config.CATEGORICAL_COLUMNS)]
+    lstm_lag_feature_cols = (config.NUMERIC_COLUMNS + config.TIME_FEATURES
+                             + one_hot_cols_lag + config.LAG_FEATURES + config.ROLLING_FEATURES)
+
+    X_train_l2, X_test_l2, y_train_l2, y_test_l2 = model.split_data(
+        df_lstm_lag, feature_cols=lstm_lag_feature_cols
+    )
+
+    train_ts_l2 = df_lstm_lag.loc[X_train_l2.index, config.TIMESTAMP_COLUMN]
+    test_ts_l2 = df_lstm_lag.loc[X_test_l2.index, config.TIMESTAMP_COLUMN]
+
+    lstm_lag_model, lstm_lag_scaler, lstm_lag_y_scaler, lstm_lag_losses, lstm_lag_val_losses, y_test_l2_seq = model.train_lstm(
+        X_train_l2, y_train_l2, X_test_l2, y_test_l2,
+        train_ts=train_ts_l2, test_ts=test_ts_l2,
+    )
+    visualization.plot_lstm_loss(lstm_lag_losses, lstm_lag_val_losses, save_name="lstm_lag_loss.png")
+
     model.save_model(lr, "linear_regression")
     model.save_model(rf, "random_forest")
     model.save_model(lstm_model, "lstm")
+    model.save_model(lstm_lag_model, "lstm_lag")
 
     # ── 6. Evaluation ────────────────────────────────────────────
     print("[6/7] Evaluation...")
@@ -117,30 +138,36 @@ def run():
     rf_preds = rf.predict(X_test)
     lstm_preds = model.predict_lstm(lstm_model, lstm_scaler, X_test_lstm,
                                      y_scaler=lstm_y_scaler, timestamps=test_ts)
+    lstm_lag_preds = model.predict_lstm(lstm_lag_model, lstm_lag_scaler, X_test_l2,
+                                         y_scaler=lstm_lag_y_scaler, timestamps=test_ts_l2)
 
     # Evaluate on comparable test windows (LSTM discards seq_len rows + session breaks)
     seq_len = config.LSTM_SEQUENCE_LENGTH
     y_test_eval = y_test[seq_len:]
     lr_metrics = evaluation.evaluate(y_test_eval, lr_preds[seq_len:])
     rf_metrics = evaluation.evaluate(y_test_eval, rf_preds[seq_len:])
-    # y_test_lstm_seq and lstm_preds are both session-boundary-filtered → aligned
     lstm_metrics = evaluation.evaluate(y_test_lstm_seq, lstm_preds)
+    lstm_lag_metrics = evaluation.evaluate(y_test_l2_seq, lstm_lag_preds)
 
     evaluation.print_metrics("LinearRegression", lr_metrics)
     evaluation.print_metrics("RandomForest", rf_metrics)
     evaluation.print_metrics("LSTM", lstm_metrics)
+    evaluation.print_metrics("LSTM+lag", lstm_lag_metrics)
 
     # Prediction plots
     visualization.plot_prediction(y_test_eval, lr_preds[seq_len:], save_name="prediction_LR.png")
     visualization.plot_prediction(y_test_eval, rf_preds[seq_len:], save_name="prediction_RF.png")
     visualization.plot_prediction(y_test_lstm_seq, lstm_preds, save_name="prediction_LSTM.png")
+    visualization.plot_prediction(y_test_l2_seq, lstm_lag_preds, save_name="prediction_LSTM_lag.png")
 
     # ── 7. Result analysis ───────────────────────────────────────
     print("[7/7] Result analysis...")
 
-    print("  -> 3-model comparison")
-    visualization.plot_model_comparison_3(
-        lr_metrics, rf_metrics, lstm_metrics, save_name="model_comparison.png"
+    print("  -> 4-model comparison")
+    visualization.plot_model_comparison(
+        [("LR", lr_metrics), ("RF", rf_metrics),
+         ("LSTM", lstm_metrics), ("LSTM+lag", lstm_lag_metrics)],
+        save_name="model_comparison.png",
     )
 
     print("  -> actual vs predicted (RF)")

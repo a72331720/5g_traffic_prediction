@@ -141,6 +141,8 @@ def train_lstm(X_train, y_train, X_test, y_test,
       - shuffle=False in DataLoader to preserve temporal order
       - ReduceLROnPlateau scheduler for better convergence
     """
+    torch.manual_seed(config.RANDOM_STATE)
+
     seq_len = config.LSTM_SEQUENCE_LENGTH
     epochs = config.LSTM_EPOCHS
     batch_size = config.LSTM_BATCH_SIZE

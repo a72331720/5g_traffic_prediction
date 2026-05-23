@@ -189,20 +189,25 @@ def plot_actual_vs_predicted(y_true, y_pred, save_name=None):
     _save_or_show(fig, save_name)
 
 
-def plot_model_comparison_3(metrics_lr, metrics_rf, metrics_lstm, save_name=None):
-    """Grouped bar chart comparing LR vs RF vs LSTM across RMSE / MAE / R²."""
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+def plot_model_comparison(model_specs, save_name=None):
+    """Grouped bar chart comparing models across RMSE / MAE / R².
+
+    model_specs: list of (name, metrics_dict) tuples, e.g.
+        [("LR", lr_metrics), ("RF", rf_metrics), ("LSTM", lstm_metrics)]
+    """
+    n_models = len(model_specs)
+    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
     metric_names = ["RMSE", "MAE", "R2"]
-    names = ["LR", "RF", "LSTM"]
-    colors = ["#1f77b4", "#ff7f0e", "#2ca02c"]
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
     for ax, m in zip(axes, metric_names):
-        vals = [metrics_lr[m], metrics_rf[m], metrics_lstm[m]]
-        bars = ax.bar(names, vals, color=colors)
+        names = [spec[0] for spec in model_specs]
+        vals = [spec[1][m] for spec in model_specs]
+        bars = ax.bar(names, vals, color=colors[:n_models])
         ax.set_title(m, fontsize=13)
         for bar, v in zip(bars, vals):
             ax.text(bar.get_x() + bar.get_width() / 2, v * 1.01, f"{v:.2f}",
                     ha="center", fontsize=10)
-    fig.suptitle("Model Comparison: LR vs RF vs LSTM", fontsize=14)
+    fig.suptitle("Model Comparison", fontsize=14)
     fig.tight_layout()
     _save_or_show(fig, save_name)
 
