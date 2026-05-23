@@ -31,7 +31,7 @@ Course project: data analysis and machine learning based prediction of 5G networ
 
 | Member      | Role                                     |
 |-------------|------------------------------------------|
-| WANG JIARUI | Full pipeline: preprocessing, feature engineering, model building (LR/RF/LSTM), evaluation, visualization, notebooks, video production |
+| WANG JIARUI | Full pipeline: dataset selection & migration, preprocessing, feature engineering, model building (LR/RF/LSTM), evaluation, visualization, notebooks, video production |
 | LIU ZHENYI  | Dataset collection & initial research    |
 | REN XUHUI   | Report writing                           |
 | YANG XIAOLU | Presentation slides (PPT)                |
