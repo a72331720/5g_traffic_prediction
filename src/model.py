@@ -48,16 +48,6 @@ def train_linear_regression(X_train, y_train):
 # =====================================================================
 # Random Forest
 # =====================================================================
-def train_random_forest(X_train, y_train, n_estimators=200, max_depth=None):
-    model = RandomForestRegressor(
-        n_estimators=n_estimators,
-        max_depth=max_depth,
-        random_state=config.RANDOM_STATE,
-        n_jobs=-1,
-    )
-    model.fit(X_train, y_train)
-    return model
-
 
 def tune_random_forest(X_train, y_train):
     """GridSearchCV over key Random Forest hyperparameters."""

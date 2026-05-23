@@ -136,15 +136,15 @@ def run():
 
     print("  -> actual vs predicted (RF)")
     visualization.plot_actual_vs_predicted(
-        y_test, rf_preds, save_name="actual_vs_predicted.png"
+        y_test_eval, rf_preds[seq_len:], save_name="actual_vs_predicted.png"
     )
 
     print("  -> residuals (RF)")
-    visualization.plot_residuals(y_test, rf_preds, save_name="residuals.png")
+    visualization.plot_residuals(y_test_eval, rf_preds[seq_len:], save_name="residuals.png")
 
     print("  -> error distribution (RF)")
     visualization.plot_error_distribution(
-        y_test, rf_preds, save_name="error_distribution.png"
+        y_test_eval, rf_preds[seq_len:], save_name="error_distribution.png"
     )
 
     print("  -> congestion timeline")

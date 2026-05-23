@@ -14,6 +14,7 @@ Course project: data analysis and machine learning based prediction of 5G networ
 │   ├── figures/            # Plots and visualizations
 │   └── models/             # Trained model artifacts (.pkl)
 ├── src/
+│   ├── __init__.py         # Package init
 │   ├── config.py           # Paths and global settings
 │   ├── data_loader.py      # Load raw data
 │   ├── preprocessing.py    # Clean data and build features
@@ -40,8 +41,9 @@ Course project: data analysis and machine learning based prediction of 5G networ
 - **Source**: [uccmisl/5Gdataset](https://github.com/uccmisl/5Gdataset) — real 5G drive-test traces
 - **Paper**: "Beyond Throughput: The Next Generation a 5G Dataset with Channel and Context Metrics" (Raca et al., ACM MMSys 2020)
 - **Size**: 188,711 rows, 1-second granularity, 27 dates (2019-11-20 to 2020-02-27)
-- **Features**: RSRP, RSRQ, SNR, CQI, RSSI, DL/UL bitrate, Speed, Location
-- **Target**: DL_bitrate (mean 10.8 Mbps, max 533 Mbps)
+- **Raw features**: RSRP, RSRQ, SNR, CQI, RSSI, UL_bitrate, Speed, Longitude, Latitude, NetworkMode, Operatorname, Application, Mobility, State
+- **Engineered features**: hour, weekday, is_weekend, lag_1, lag_2, lag_3, rolling_mean_3, rolling_mean_6, rolling_std_3, rolling_std_6
+- **Target**: DL_bitrate (mean 10.8 Mbps, max 533 Mbps; raw data in kbps)
 
 ## 📈 Model Performance
 

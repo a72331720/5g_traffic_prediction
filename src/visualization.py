@@ -27,7 +27,7 @@ def plot_hourly_pattern(hourly_series, save_name=None):
     hourly_series.plot(kind="bar", ax=ax, color="steelblue")
     ax.set_title("Average Download Speed by Hour of Day")
     ax.set_xlabel("Hour")
-    ax.set_ylabel("Avg Download Speed (Mbps)")
+    ax.set_ylabel("Avg Download Speed (kbps)")
     _save_or_show(fig, save_name)
 
 
@@ -39,7 +39,7 @@ def plot_weekday_pattern(weekday_series, save_name=None):
     plot_data.plot(kind="bar", ax=ax, color="steelblue")
     ax.set_title("Average Download Speed by Weekday")
     ax.set_xlabel("Weekday")
-    ax.set_ylabel("Avg Download Speed (Mbps)")
+    ax.set_ylabel("Avg Download Speed (kbps)")
     ax.tick_params(axis="x", rotation=0)
     _save_or_show(fig, save_name)
 
@@ -49,7 +49,7 @@ def plot_daily_trend(daily_series, save_name=None):
     ax.plot(pd.to_datetime(daily_series.index), daily_series.values, linewidth=1, color="steelblue")
     ax.set_title("Average Daily Download Speed Over Time")
     ax.set_xlabel("Date")
-    ax.set_ylabel("Avg Download Speed (Mbps)")
+    ax.set_ylabel("Avg Download Speed (kbps)")
     ax.tick_params(axis="x", rotation=30)
     _save_or_show(fig, save_name)
 
@@ -59,7 +59,7 @@ def plot_weekday_vs_weekend(stats_df, save_name=None):
     stats_df[["mean", "max"]].plot(kind="bar", ax=ax, color=["steelblue", "coral"])
     ax.set_title("Weekday vs Weekend Throughput")
     ax.set_xlabel("")
-    ax.set_ylabel("Download Speed (Mbps)")
+    ax.set_ylabel("Download Speed (kbps)")
     ax.tick_params(axis="x", rotation=0)
     ax.legend(["Mean", "Max"])
     _save_or_show(fig, save_name)
@@ -149,7 +149,7 @@ def plot_prediction(y_true, y_pred, save_name=None):
     ax.plot(np.array(y_pred)[:300], label="Predicted", linewidth=1, alpha=0.8)
     ax.set_title("Predicted vs Actual Download Speed")
     ax.set_xlabel("Time step")
-    ax.set_ylabel("Download Speed (Mbps)")
+    ax.set_ylabel("Download Speed (kbps)")
     ax.legend()
     _save_or_show(fig, save_name)
 
@@ -183,8 +183,8 @@ def plot_actual_vs_predicted(y_true, y_pred, save_name=None):
     hi = max(np.max(y_true), np.max(y_pred))
     ax.plot([lo, hi], [lo, hi], color="red", linestyle="--", linewidth=1.5, label="y = x")
     ax.set_title("Actual vs Predicted Download Speed")
-    ax.set_xlabel("Actual (Mbps)")
-    ax.set_ylabel("Predicted (Mbps)")
+    ax.set_xlabel("Actual (kbps)")
+    ax.set_ylabel("Predicted (kbps)")
     ax.legend()
     _save_or_show(fig, save_name)
 
@@ -227,12 +227,12 @@ def plot_congestion_timeline(df, threshold_pct=75, save_name=None):
     ax.plot(df[config.TIMESTAMP_COLUMN], df[config.TARGET_COLUMN],
             linewidth=0.6, color="steelblue", alpha=0.8, label="Throughput")
     ax.axhline(threshold, color="red", linestyle="--", linewidth=1.5,
-               label=f"Congestion threshold ({threshold:.0f} Mbps)")
+               label=f"Congestion threshold ({threshold:.0f} kbps)")
     ax.fill_between(df[config.TIMESTAMP_COLUMN], 0, df[config.TARGET_COLUMN],
                     where=df[config.TARGET_COLUMN] <= threshold,
                     color="red", alpha=0.15, label="Congestion zone")
     ax.set_title("5G Throughput Timeline with Congestion Detection")
     ax.set_xlabel("Time")
-    ax.set_ylabel("Download Speed (Mbps)")
+    ax.set_ylabel("Download Speed (kbps)")
     ax.legend(loc="upper right")
     _save_or_show(fig, save_name)
