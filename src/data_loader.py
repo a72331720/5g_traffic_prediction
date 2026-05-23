@@ -11,7 +11,7 @@ def load_raw(path: Path | None = None) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(
             f"Raw dataset not found at {path}. "
-            "Download a Kaggle network traffic dataset and place it there."
+            "Download the 5G dataset from https://github.com/uccmisl/5Gdataset and place it there."
         )
     df = pd.read_csv(path, parse_dates=[config.TIMESTAMP_COLUMN])
     return df

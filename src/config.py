@@ -56,7 +56,6 @@ ROLLING_FEATURES = ["rolling_mean_3", "rolling_mean_6", "rolling_std_3", "rollin
 FEATURE_COLUMNS = (
     NUMERIC_COLUMNS
     + CATEGORICAL_COLUMNS
-
     + TIME_FEATURES
     + LAG_FEATURES
     + ROLLING_FEATURES
