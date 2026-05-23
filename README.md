@@ -43,14 +43,14 @@ Course project: data analysis and machine learning based prediction of 5G networ
 - **Size**: 188,711 rows, 1-second granularity, 27 dates (2019-11-20 to 2020-02-27)
 - **Raw features**: RSRP, RSRQ, SNR, CQI, RSSI, UL_bitrate, Speed, Longitude, Latitude, NetworkMode, Operatorname, Application, Mobility, State
 - **Engineered features**: hour, weekday, is_weekend, lag_1, lag_2, lag_3, rolling_mean_3, rolling_mean_6, rolling_std_3, rolling_std_6
-- **Target**: DL_bitrate (mean 10.8 Mbps, max 533 Mbps; raw data in kbps)
+- **Target**: DL_bitrate (mean 10,758 kbps, max 532,905 kbps)
 
 ## 📈 Model Performance
 
 | Model            | RMSE      | MAE     | R²     |
 |------------------|-----------|---------|--------|
 | Linear Regression | 28,954   | 13,051  | 0.799  |
-| ⭐ Random Forest  | 19,588   | 8,082   | 0.908  |
+| Random Forest     | 19,588   | 8,082   | 0.908  |
 | LSTM             | 44,964   | 21,489  | 0.518  |
 | LSTM + lag       | 31,843   | 14,751  | 0.758  |
 
@@ -58,7 +58,10 @@ Course project: data analysis and machine learning based prediction of 5G networ
 than sequence-driven: the strongest predictive signal is lag-1 autocorrelation
 (0.89), which tree-based models exploit directly via engineered lag/rolling
 features. Recurrent architectures must learn the same patterns from raw noisy
-RF measurements over a limited window, making them a less natural fit here.
+radio-frequency (RF) signal measurements over a limited window, making them a less natural fit here.
+Even when provided with equivalent lag-based temporal features, LSTM (R²=0.758) still underperforms
+both Linear Regression (R²=0.799) and Random Forest (R²=0.908), confirming that this dataset is
+inherently feature-driven rather than sequence-driven.
 
 ## 🚀 Quick Start
 
