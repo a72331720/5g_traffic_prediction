@@ -84,15 +84,24 @@ def run():
     model.plot_feature_importance(rf, save_name="feature_importance.png")
 
     print("  -> LSTM (PyTorch)")
-    X_train_lstm = X_train[config.LSTM_FEATURE_COLUMNS]
-    X_test_lstm = X_test[config.LSTM_FEATURE_COLUMNS]
+    # LSTM uses its own feature pipeline: one-hot categoricals (not label encoding)
+    df_lstm = preprocessing.build_lstm_features(df_raw)
 
-    # Timestamps for session-boundary detection (cross-session = garbage sequences)
-    train_ts = df.loc[X_train.index, config.TIMESTAMP_COLUMN]
-    test_ts = df.loc[X_test.index, config.TIMESTAMP_COLUMN]
+    # One-hot columns are named like "NetworkMode_5G", "Application_Netflix", etc.
+    one_hot_cols = [c for c in df_lstm.columns
+                    if any(c.startswith(f"{cat}_") for cat in config.CATEGORICAL_COLUMNS)]
+    lstm_feature_cols = config.NUMERIC_COLUMNS + config.TIME_FEATURES + one_hot_cols
 
-    lstm_model, lstm_scaler, lstm_y_scaler, lstm_losses, lstm_val_losses, y_test_lstm = model.train_lstm(
-        X_train_lstm, y_train, X_test_lstm, y_test,
+    # Chronological split on the LSTM-specific dataframe (more rows — no lag/rolling dropna)
+    X_train_lstm, X_test_lstm, y_train_lstm, y_test_lstm = model.split_data(
+        df_lstm, feature_cols=lstm_feature_cols
+    )
+
+    train_ts = df_lstm.loc[X_train_lstm.index, config.TIMESTAMP_COLUMN]
+    test_ts = df_lstm.loc[X_test_lstm.index, config.TIMESTAMP_COLUMN]
+
+    lstm_model, lstm_scaler, lstm_y_scaler, lstm_losses, lstm_val_losses, y_test_lstm_seq = model.train_lstm(
+        X_train_lstm, y_train_lstm, X_test_lstm, y_test_lstm,
         train_ts=train_ts, test_ts=test_ts,
     )
     visualization.plot_lstm_loss(lstm_losses, lstm_val_losses, save_name="lstm_loss.png")
@@ -114,8 +123,8 @@ def run():
     y_test_eval = y_test[seq_len:]
     lr_metrics = evaluation.evaluate(y_test_eval, lr_preds[seq_len:])
     rf_metrics = evaluation.evaluate(y_test_eval, rf_preds[seq_len:])
-    # y_test_lstm and lstm_preds are both session-boundary-filtered → aligned
-    lstm_metrics = evaluation.evaluate(y_test_lstm, lstm_preds)
+    # y_test_lstm_seq and lstm_preds are both session-boundary-filtered → aligned
+    lstm_metrics = evaluation.evaluate(y_test_lstm_seq, lstm_preds)
 
     evaluation.print_metrics("LinearRegression", lr_metrics)
     evaluation.print_metrics("RandomForest", rf_metrics)
@@ -124,7 +133,7 @@ def run():
     # Prediction plots
     visualization.plot_prediction(y_test_eval, lr_preds[seq_len:], save_name="prediction_LR.png")
     visualization.plot_prediction(y_test_eval, rf_preds[seq_len:], save_name="prediction_RF.png")
-    visualization.plot_prediction(y_test_lstm, lstm_preds, save_name="prediction_LSTM.png")
+    visualization.plot_prediction(y_test_lstm_seq, lstm_preds, save_name="prediction_LSTM.png")
 
     # ── 7. Result analysis ───────────────────────────────────────
     print("[7/7] Result analysis...")

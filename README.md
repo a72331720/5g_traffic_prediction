@@ -7,7 +7,7 @@ Course project: data analysis and machine learning based prediction of 5G networ
 ```
 5g_traffic_prediction/
 ├── data/
-│   ├── raw/                # Original datasets (e.g. from Kaggle)
+│   ├── raw/                # Original datasets (from GitHub)
 │   └── processed/          # Cleaned / feature-engineered data
 ├── notebooks/              # Jupyter notebooks for EDA and experiments
 ├── results/
@@ -51,7 +51,7 @@ Course project: data analysis and machine learning based prediction of 5G networ
 |------------------|-----------|---------|--------|
 | Linear Regression | 28,954   | 13,051  | 0.799  |
 | ⭐ Random Forest  | 19,588   | 8,082   | 0.908  |
-| LSTM             | 47,572   | 22,265  | 0.460  |
+| LSTM             | 43,995   | 21,393  | 0.538  |
 
 ✅ **Random Forest is the recommended model.** This dataset is feature-driven rather
 than sequence-driven: the strongest predictive signal is lag-1 autocorrelation

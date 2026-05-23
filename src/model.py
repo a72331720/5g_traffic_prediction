@@ -24,9 +24,11 @@ FEATURE_COLUMNS = config.FEATURE_COLUMNS
 # =====================================================================
 # Data splitting
 # =====================================================================
-def split_data(df: pd.DataFrame):
+def split_data(df: pd.DataFrame, feature_cols: "list[str] | None" = None):
     """Chronological train/test split (no shuffle for time-series)."""
-    X = df[FEATURE_COLUMNS]
+    if feature_cols is None:
+        feature_cols = FEATURE_COLUMNS
+    X = df[feature_cols]
     y = df[config.TARGET_COLUMN]
     return train_test_split(
         X, y,

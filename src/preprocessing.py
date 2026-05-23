@@ -3,33 +3,27 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
+
 from . import config
 
 
 # ── Cleaning ───────────────────────────────────────────────────────
 def clean(df: pd.DataFrame) -> pd.DataFrame:
-    """Drop duplicates, parse timestamps, handle missing values."""
+    """Drop duplicates, handle missing values. Timestamps parsed by loader."""
     df = df.drop_duplicates().copy()
     if config.TIMESTAMP_COLUMN in df.columns:
-        df[config.TIMESTAMP_COLUMN] = pd.to_datetime(df[config.TIMESTAMP_COLUMN])
         df = df.sort_values(config.TIMESTAMP_COLUMN).reset_index(drop=True)
     df = df.ffill().bfill()
     return df
 
 
 # ── Categorical encoding ──────────────────────────────────────────
-_label_encoders: dict[str, LabelEncoder] = {}
-
-
 def encode_categorical(df: pd.DataFrame) -> pd.DataFrame:
-    """Label-encode categorical columns and cast booleans to int."""
+    """Label-encode categorical columns."""
     df = df.copy()
     for col in config.CATEGORICAL_COLUMNS:
         le = LabelEncoder()
         df[col] = le.fit_transform(df[col].astype(str))
-        _label_encoders[col] = le
-    for col in config.BOOLEAN_COLUMNS:
-        df[col] = df[col].astype(int)
     return df
 
 
@@ -63,6 +57,33 @@ def add_rolling_features(df: pd.DataFrame, windows=(3, 6)) -> pd.DataFrame:
         df[f"rolling_mean_{w}"] = target.shift(1).rolling(w).mean()
         df[f"rolling_std_{w}"] = target.shift(1).rolling(w).std()
     df = df.dropna().reset_index(drop=True)
+    return df
+
+
+# ── One-hot encoding (for LSTM) ──────────────────────────────────
+def one_hot_encode(df: pd.DataFrame) -> pd.DataFrame:
+    """One-hot encode categorical columns. Drops original columns.
+
+    Label encoding + StandardScaler imposes false ordinal distances on
+    categoricals. One-hot gives the LSTM clean binary indicators instead.
+    """
+    df = df.copy()
+    for col in config.CATEGORICAL_COLUMNS:
+        dummies = pd.get_dummies(df[col], prefix=col)
+        df = pd.concat([df, dummies], axis=1)
+        df = df.drop(columns=[col])
+    return df
+
+
+def build_lstm_features(df_raw: pd.DataFrame) -> pd.DataFrame:
+    """Feature pipeline for LSTM: clean → time features → one-hot encode.
+
+    No label encoding, no lag/rolling features. Returns the full DataFrame
+    so callers can extract feature columns dynamically.
+    """
+    df = clean(df_raw)
+    df = add_time_features(df)
+    df = one_hot_encode(df)
     return df
 
 

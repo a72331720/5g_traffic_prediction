@@ -32,9 +32,6 @@ CATEGORICAL_COLUMNS = [
     "State",
 ]
 
-# ── Boolean columns (cast to int) ──────────────────────────────────
-BOOLEAN_COLUMNS: list[str] = []
-
 # ── Numeric columns from raw data ──────────────────────────────────
 NUMERIC_COLUMNS = [
     "Speed",
@@ -59,18 +56,10 @@ ROLLING_FEATURES = ["rolling_mean_3", "rolling_mean_6", "rolling_std_3", "rollin
 FEATURE_COLUMNS = (
     NUMERIC_COLUMNS
     + CATEGORICAL_COLUMNS
-    + BOOLEAN_COLUMNS
+
     + TIME_FEATURES
     + LAG_FEATURES
     + ROLLING_FEATURES
-)
-
-# ── LSTM uses raw features without pre-computed lag/rolling ─────
-LSTM_FEATURE_COLUMNS = (
-    NUMERIC_COLUMNS
-    + CATEGORICAL_COLUMNS
-    + BOOLEAN_COLUMNS
-    + TIME_FEATURES
 )
 
 # ── LSTM settings ──────────────────────────────────────────────────
