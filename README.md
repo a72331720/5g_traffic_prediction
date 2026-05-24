@@ -1,6 +1,6 @@
 # 📡 5G Network Traffic Prediction
 
-Course project: data analysis and machine learning based prediction of 5G network traffic.
+This project analyses real-world 5G drive-test data and builds machine learning models to predict network throughput. Using 188,711 measurements from the uccmisl/5Gdataset (ACM MMSys 2020), we compare Linear Regression, Random Forest, and LSTM approaches. Random Forest achieves R² = 0.908, confirming that the task is feature-driven rather than sequence-driven.
 
 ## 📁 Project Structure
 
