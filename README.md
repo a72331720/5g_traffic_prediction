@@ -63,10 +63,10 @@ This project analyses real-world 5G drive-test data and builds machine learning 
 
 | Model            | RMSE      | MAE     | R²     |
 |------------------|-----------|---------|--------|
-| Linear Regression | 28,981   | 13,073  | 0.799  |
-| Random Forest     | 19,690   | 8,114   | 0.907  |
+| Linear Regression | 28,998   | 13,086  | 0.799  |
+| Random Forest     | 19,538   | 8,086   | 0.909  |
 | LSTM             | 50,604   | 24,158  | 0.389  |
-| LSTM + lag       | 31,922   | 14,717  | 0.757  |
+| LSTM + lag       | 34,320   | 16,306  | 0.719  |
 
 ![Model comparison](results/figures/model_comparison.png)
 
@@ -75,9 +75,9 @@ than sequence-driven: the strongest predictive signal is lag-1 autocorrelation
 (0.89), which tree-based models exploit directly via engineered lag/rolling
 features. Recurrent architectures must learn the same patterns from raw noisy
 radio-frequency (RF) signal measurements over a limited window, making them a less natural fit here.
-Even when provided with equivalent lag-based temporal features, LSTM (R²=0.757) still underperforms
-both Linear Regression (R²=0.799) and Random Forest (R²=0.907), confirming that this dataset is
-inherently feature-driven rather than sequence-driven.
+Even when provided with equivalent lag-based temporal features, LSTM+lag (R²=0.719)
+still underperforms both Linear Regression (R²=0.799) and Random Forest (R²=0.909),
+confirming that this dataset is inherently feature-driven rather than sequence-driven.
 
 ![RF actual vs predicted](results/figures/actual_vs_predicted_RF.png)
 
@@ -85,8 +85,8 @@ inherently feature-driven rather than sequence-driven.
 
 ## Known Limitations
 
-- **Evaluation set size mismatch**: LR/RF are evaluated on ~37,582 samples;
-  LSTM variants on ~36,783 / ~36,682 (after session-boundary filtering). The
+- **Evaluation set size mismatch**: LR/RF are evaluated on ~37,533 samples;
+  LSTM variants on ~36,783 / ~36,633 (after session-boundary filtering). The
   difference is negligible but noted for transparency.
 
 ## Conclusion
@@ -99,7 +99,7 @@ must infer it from noisy RF measurements over a limited window.
 
 LSTM instability further reinforces this conclusion: across PyTorch versions
 the same code and seed produce R² ranging from 0.39 to 0.52, while RF stays
-within 0.907–0.908 regardless of platform. For production 5G traffic
+within 0.907–0.909 regardless of platform. For production 5G traffic
 prediction with tabular drive-test data, Random Forest is both the most
 accurate and most reliable choice.
 

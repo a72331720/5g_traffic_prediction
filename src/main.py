@@ -142,9 +142,9 @@ def run():
                                          y_scaler=lstm_lag_y_scaler, timestamps=test_ts_l2)
 
     # Evaluate on comparable test windows.
-    # LR/RF:  y_test[seq_len:] = ~37,582 samples after removing first seq_len rows.
+    # LR/RF:  y_test[seq_len:] = ~37,533 samples after removing first seq_len rows.
     # LSTM:   y_test_lstm_seq = 36,783 samples (also skips cross-session sequences).
-    # LSTM+lag: y_test_l2_seq = 36,682 samples (same).
+    # LSTM+lag: y_test_l2_seq = 36,633 samples (same).
     # The ~800-sample gap is from session-boundary filtering, not a data leak.
     seq_len = config.LSTM_SEQUENCE_LENGTH
     y_test_eval = y_test[seq_len:]

@@ -38,11 +38,24 @@ def add_time_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ── Lag features ──────────────────────────────────────────────────
-def add_lag_features(df: pd.DataFrame, lags=(1, 2, 3)) -> pd.DataFrame:
-    """Add lagged target values for time-series modelling."""
+def add_lag_features(df: pd.DataFrame, lags=(1, 2, 3),
+                     timestamps: "pd.Series | None" = None) -> pd.DataFrame:
+    """Add lagged target values for time-series modelling.
+
+    If timestamps is provided, lag resets at session boundaries
+    (gap > LSTM_SESSION_GAP_SECONDS), preventing cross-session leakage.
+    """
     df = df.copy()
-    for lag in lags:
-        df[f"lag_{lag}"] = df[config.TARGET_COLUMN].shift(lag)
+    if timestamps is not None:
+        gap = pd.Timedelta(seconds=config.LSTM_SESSION_GAP_SECONDS)
+        session_id = (timestamps.diff() > gap).cumsum()
+        session_id.index = df.index
+        for lag in lags:
+            df[f"lag_{lag}"] = df[config.TARGET_COLUMN].groupby(
+                session_id, group_keys=False).shift(lag)
+    else:
+        for lag in lags:
+            df[f"lag_{lag}"] = df[config.TARGET_COLUMN].shift(lag)
     df = df.dropna().reset_index(drop=True)
     return df
 
@@ -114,7 +127,7 @@ def build_lstm_lag_features(df_raw: pd.DataFrame) -> pd.DataFrame:
     df = clean(df_raw)
     df = one_hot_encode(df)
     df = add_time_features(df)
-    df = add_lag_features(df)
+    df = add_lag_features(df, timestamps=df[config.TIMESTAMP_COLUMN])
     df = add_rolling_features(df, timestamps=df[config.TIMESTAMP_COLUMN])
     return df
 
@@ -125,7 +138,7 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     df = clean(df)
     df = encode_categorical(df)
     df = add_time_features(df)
-    df = add_lag_features(df)
+    df = add_lag_features(df, timestamps=df[config.TIMESTAMP_COLUMN])
     df = add_rolling_features(df, timestamps=df[config.TIMESTAMP_COLUMN])
     return df
 
