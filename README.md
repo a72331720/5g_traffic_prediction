@@ -105,14 +105,15 @@ accurate and most reliable choice.
 
 ## 🚀 Quick Start
 
-Requires Python 3.10+.
+Requires Python 3.12.x (or 3.10+).
 
 ```bash
 pip install -r requirements.txt
 python -m src.main
 ```
 
-- Runs the full pipeline (~30–60 min)
+- GPU (CUDA): ~15–20 min
+- CPU only: ~30–60 min
 - Figures saved to `results/figures/`
 - Trained models saved to `results/models/`
 
