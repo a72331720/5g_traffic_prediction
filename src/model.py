@@ -6,15 +6,14 @@ from pathlib import Path
 import joblib
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, TensorDataset
+
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
-
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
 
 from . import config
 
@@ -275,24 +274,6 @@ def predict_lstm(model, scaler, X, y_scaler=None, seq_len=None,
 
 
 # =====================================================================
-# Feature importance (RF)
-# =====================================================================
-def plot_feature_importance(model, save_name: str | None = None):
-    """Horizontal bar chart of feature importance (RF only)."""
-    if not hasattr(model, "feature_importances_"):
-        return
-    imp = pd.Series(model.feature_importances_, index=FEATURE_COLUMNS).sort_values()
-    fig, ax = plt.subplots(figsize=(8, 6))
-    imp.plot(kind="barh", ax=ax, color="steelblue")
-    ax.set_title("Random Forest Feature Importance")
-    ax.set_xlabel("Importance")
-    if save_name:
-        config.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
-        fig.savefig(config.FIGURES_DIR / save_name, dpi=150, bbox_inches="tight")
-        plt.close(fig)
-
-
-# =====================================================================
 # Save / load
 # =====================================================================
 def save_model(model, name: str) -> Path:
@@ -303,5 +284,33 @@ def save_model(model, name: str) -> Path:
         return config.MODELS_DIR / f"{name}.pt"
     joblib.dump(model, path)
     return path
+
+
+def load_model(name: str):
+    """Load a saved sklearn model or LSTM from disk.
+
+    For LSTM models, input_size / hidden_size / num_layers are inferred
+    from the saved state dict automatically.
+    """
+    path_pkl = config.MODELS_DIR / f"{name}.pkl"
+    path_pt = config.MODELS_DIR / f"{name}.pt"
+
+    if path_pt.exists():
+        state = torch.load(path_pt, map_location=DEVICE, weights_only=True)
+        # Infer architecture from state dict
+        w_ih = state["lstm.weight_ih_l0"]
+        hidden_size = w_ih.shape[0] // 4   # LSTM gates
+        input_size = w_ih.shape[1]
+        num_layers = sum(1 for k in state
+                         if k.startswith("lstm.weight_ih_l"))
+        model = LSTMModel(input_size, hidden_size, num_layers).to(DEVICE)
+        model.load_state_dict(state)
+        model.eval()
+        return model
+
+    if path_pkl.exists():
+        return joblib.load(path_pkl)
+
+    raise FileNotFoundError(f"Model '{name}' not found in {config.MODELS_DIR}")
 
 

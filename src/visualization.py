@@ -241,3 +241,17 @@ def plot_congestion_timeline(df, threshold_pct=75, save_name=None):
     ax.set_ylabel("Download Speed (kbps)")
     ax.legend(loc="upper right")
     _save_or_show(fig, save_name)
+
+
+def plot_feature_importance(model, feature_names=None, save_name=None):
+    """Horizontal bar chart of feature importance (RF only)."""
+    if not hasattr(model, "feature_importances_"):
+        return
+    if feature_names is None:
+        feature_names = config.FEATURE_COLUMNS
+    imp = pd.Series(model.feature_importances_, index=feature_names).sort_values()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    imp.plot(kind="barh", ax=ax, color="steelblue")
+    ax.set_title("Random Forest Feature Importance")
+    ax.set_xlabel("Importance")
+    _save_or_show(fig, save_name)

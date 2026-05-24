@@ -81,7 +81,7 @@ def run():
 
     print("  -> Random Forest (tuned with GridSearchCV)")
     rf = model.tune_random_forest(X_train, y_train)
-    model.plot_feature_importance(rf, save_name="feature_importance.png")
+    visualization.plot_feature_importance(rf, save_name="feature_importance.png")
 
     print("  -> LSTM (PyTorch)")
     # LSTM uses its own feature pipeline: one-hot categoricals (not label encoding)
