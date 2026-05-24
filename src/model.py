@@ -143,6 +143,8 @@ def train_lstm(X_train, y_train, X_test, y_test,
       - ReduceLROnPlateau scheduler for better convergence
     """
     torch.manual_seed(config.RANDOM_STATE)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
     seq_len = config.LSTM_SEQUENCE_LENGTH
     epochs = config.LSTM_EPOCHS
@@ -264,8 +266,13 @@ def predict_lstm(model, scaler, X, y_scaler=None, seq_len=None,
 
     model.eval()
     model.to(DEVICE)
+    preds_scaled = []
+    ds = TensorDataset(torch.tensor(X_seq, dtype=torch.float32))
+    loader = DataLoader(ds, batch_size=config.LSTM_BATCH_SIZE, shuffle=False)
     with torch.no_grad():
-        preds_scaled = model(torch.tensor(X_seq, dtype=torch.float32, device=DEVICE)).cpu().numpy()
+        for (xb,) in loader:
+            preds_scaled.append(model(xb.to(DEVICE)).cpu().numpy())
+    preds_scaled = np.concatenate(preds_scaled)
     if y_scaler is not None:
         preds = y_scaler.inverse_transform(preds_scaled.reshape(-1, 1)).ravel()
     else:

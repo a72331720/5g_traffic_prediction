@@ -49,10 +49,10 @@ This project analyses real-world 5G drive-test data and builds machine learning 
 
 | Model            | RMSE      | MAE     | R²     |
 |------------------|-----------|---------|--------|
-| Linear Regression | 28,954   | 13,051  | 0.799  |
-| Random Forest     | 19,588   | 8,082   | 0.908  |
-| LSTM             | 44,964   | 21,489  | 0.518  |
-| LSTM + lag       | 31,843   | 14,751  | 0.758  |
+| Linear Regression | 28,981   | 13,073  | 0.799  |
+| Random Forest     | 19,690   | 8,114   | 0.907  |
+| LSTM             | 50,604   | 24,158  | 0.389  |
+| LSTM + lag       | 31,922   | 14,717  | 0.757  |
 
 ![Model comparison](results/figures/model_comparison.png)
 
@@ -61,8 +61,8 @@ than sequence-driven: the strongest predictive signal is lag-1 autocorrelation
 (0.89), which tree-based models exploit directly via engineered lag/rolling
 features. Recurrent architectures must learn the same patterns from raw noisy
 radio-frequency (RF) signal measurements over a limited window, making them a less natural fit here.
-Even when provided with equivalent lag-based temporal features, LSTM (R²=0.758) still underperforms
-both Linear Regression (R²=0.799) and Random Forest (R²=0.908), confirming that this dataset is
+Even when provided with equivalent lag-based temporal features, LSTM (R²=0.757) still underperforms
+both Linear Regression (R²=0.799) and Random Forest (R²=0.907), confirming that this dataset is
 inherently feature-driven rather than sequence-driven.
 
 ![RF actual vs predicted](results/figures/actual_vs_predicted_RF.png)
@@ -71,14 +71,7 @@ inherently feature-driven rather than sequence-driven.
 
 ## Known Limitations
 
-- **Rolling feature session boundary**: `add_rolling_features()` computes
-  rolling statistics without session-boundary isolation. The first 3–6 rows
-  of each drive-test session may contain cross-session leakage. This affects
-  LR, RF, and LSTM+lag equally (<1% of records) and does not alter
-  comparative conclusions, as RF remains the best-performing model regardless,
-  and the relative ranking of all four models is unchanged.
-
-- **Evaluation set size mismatch**: LR/RF are evaluated on 37,681 samples;
+- **Evaluation set size mismatch**: LR/RF are evaluated on ~37,642 samples;
   LSTM variants on ~36,783 (after session-boundary filtering). The difference
   is negligible but noted for transparency.
 

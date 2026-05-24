@@ -48,13 +48,33 @@ def add_lag_features(df: pd.DataFrame, lags=(1, 2, 3)) -> pd.DataFrame:
 
 
 # ── Rolling features ─────────────────────────────────────────────
-def add_rolling_features(df: pd.DataFrame, windows=(3, 6)) -> pd.DataFrame:
-    """Add rolling mean and std of target using only past values (no leakage)."""
+def add_rolling_features(df: pd.DataFrame, windows=(3, 6),
+                         timestamps: "pd.Series | None" = None) -> pd.DataFrame:
+    """Add rolling mean and std of target using only past values (no leakage).
+
+    If timestamps is provided, rolling resets at session boundaries
+    (gap > LSTM_SESSION_GAP_SECONDS), preventing cross-session leakage.
+    """
     df = df.copy()
+    if timestamps is not None:
+        gap = pd.Timedelta(seconds=config.LSTM_SESSION_GAP_SECONDS)
+        session_id = (timestamps.diff() > gap).cumsum()
+        session_id.index = df.index
+    else:
+        session_id = None
+
     target = df[config.TARGET_COLUMN]
     for w in windows:
-        df[f"rolling_mean_{w}"] = target.shift(1).rolling(w).mean()
-        df[f"rolling_std_{w}"] = target.shift(1).rolling(w).std()
+        if session_id is not None:
+            df[f"rolling_mean_{w}"] = target.groupby(
+                session_id, group_keys=False
+            ).transform(lambda x: x.shift(1).rolling(w, min_periods=w).mean())
+            df[f"rolling_std_{w}"] = target.groupby(
+                session_id, group_keys=False
+            ).transform(lambda x: x.shift(1).rolling(w, min_periods=w).std())
+        else:
+            df[f"rolling_mean_{w}"] = target.shift(1).rolling(w).mean()
+            df[f"rolling_std_{w}"] = target.shift(1).rolling(w).std()
     df = df.dropna().reset_index(drop=True)
     return df
 
@@ -95,7 +115,7 @@ def build_lstm_lag_features(df_raw: pd.DataFrame) -> pd.DataFrame:
     df = one_hot_encode(df)
     df = add_time_features(df)
     df = add_lag_features(df)
-    df = add_rolling_features(df)
+    df = add_rolling_features(df, timestamps=df[config.TIMESTAMP_COLUMN])
     return df
 
 
@@ -106,7 +126,7 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     df = encode_categorical(df)
     df = add_time_features(df)
     df = add_lag_features(df)
-    df = add_rolling_features(df)
+    df = add_rolling_features(df, timestamps=df[config.TIMESTAMP_COLUMN])
     return df
 
 
