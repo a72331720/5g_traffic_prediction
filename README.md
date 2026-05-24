@@ -75,6 +75,20 @@ inherently feature-driven rather than sequence-driven.
   LSTM variants on ~36,783 (after session-boundary filtering). The difference
   is negligible but noted for transparency.
 
+## Conclusion
+
+Random Forest is the clear winner for this 5G throughput prediction task
+(R² = 0.907). The dataset is fundamentally feature-driven, not sequence-driven:
+lag-1 autocorrelation (0.89) is the dominant signal, and tree-based models
+exploit it directly via engineered features while recurrent architectures
+must infer it from noisy RF measurements over a limited window.
+
+LSTM instability further reinforces this conclusion: across PyTorch versions
+the same code and seed produce R² ranging from 0.39 to 0.52, while RF stays
+within 0.907–0.908 regardless of platform. For production 5G traffic
+prediction with tabular drive-test data, Random Forest is both the most
+accurate and most reliable choice.
+
 ## 🚀 Quick Start
 
 Requires Python 3.10+.
