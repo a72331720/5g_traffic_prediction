@@ -63,6 +63,19 @@ Even when provided with equivalent lag-based temporal features, LSTM (R²=0.758)
 both Linear Regression (R²=0.799) and Random Forest (R²=0.908), confirming that this dataset is
 inherently feature-driven rather than sequence-driven.
 
+## Known Limitations
+
+- **Rolling feature session boundary**: `add_rolling_features()` computes
+  rolling statistics without session-boundary isolation. The first 3–6 rows
+  of each drive-test session may contain cross-session leakage. This affects
+  LR, RF, and LSTM+lag equally (<1% of records) and does not alter
+  comparative conclusions, as RF remains the best-performing model regardless,
+  and the relative ranking of all four models is unchanged.
+
+- **Evaluation set size mismatch**: LR/RF are evaluated on 37,681 samples;
+  LSTM variants on ~36,783 (after session-boundary filtering). The difference
+  is negligible but noted for transparency.
+
 ## 🚀 Quick Start
 
 ```bash
