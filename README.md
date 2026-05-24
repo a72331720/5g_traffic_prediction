@@ -84,6 +84,8 @@ inherently feature-driven rather than sequence-driven.
 
 ## 🚀 Quick Start
 
+Requires Python 3.10+.
+
 ```bash
 pip install -r requirements.txt
 python -m src.main
