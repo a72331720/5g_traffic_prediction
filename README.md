@@ -92,7 +92,7 @@ confirming that this dataset is inherently feature-driven rather than sequence-d
 ## Conclusion
 
 Random Forest is the clear winner for this 5G throughput prediction task
-(R² = 0.907). The dataset is fundamentally feature-driven, not sequence-driven:
+(R² = 0.909). The dataset is fundamentally feature-driven, not sequence-driven:
 lag-1 autocorrelation (0.89) is the dominant signal, and tree-based models
 exploit it directly via engineered features while recurrent architectures
 must infer it from noisy RF measurements over a limited window.
