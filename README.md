@@ -38,12 +38,26 @@ This project analyses real-world 5G drive-test data and builds machine learning 
 
 ## 📊 Dataset
 
-- **Source**: [uccmisl/5Gdataset](https://github.com/uccmisl/5Gdataset) — real 5G drive-test traces
-- **Paper**: "Beyond Throughput: The Next Generation a 5G Dataset with Channel and Context Metrics" (Raca et al., ACM MMSys 2020)
+- **Source**: [uccmisl/5Gdataset](https://github.com/uccmisl/5Gdataset) — real-world 5G
+  drive-test traces from a major Irish mobile operator, collected via G-NetTrack Pro
+- **Mobility patterns**: Static and Driving (car)
+- **Application patterns**: video streaming (Netflix, Amazon Prime) and file download
+- **Metrics**: channel (RSRP, RSRQ, SNR, CQI, RSSI), context (location, speed, network
+  mode), and throughput (DL/UL bitrate). This is the first publicly available 5G dataset
+  combining throughput with channel and context information.
 - **Size**: 188,711 rows, 1-second granularity, 27 dates (2019-11-20 to 2020-02-27)
-- **Raw features**: RSRP, RSRQ, SNR, CQI, RSSI, UL_bitrate, Speed, Longitude, Latitude, NetworkMode, Operatorname, Application, Mobility, State
-- **Engineered features**: hour, weekday, is_weekend, lag_1, lag_2, lag_3, rolling_mean_3, rolling_mean_6, rolling_std_3, rolling_std_6
+- **Raw features**: RSRP, RSRQ, SNR, CQI, RSSI, UL_bitrate, Speed, Longitude,
+  Latitude, NetworkMode, Operatorname, Application, Mobility, State
+- **Engineered features**: hour, weekday, is_weekend, lag_1, lag_2, lag_3,
+  rolling_mean_3, rolling_mean_6, rolling_std_3, rolling_std_6
 - **Target**: DL_bitrate (mean 10,758 kbps, max 532,905 kbps)
+
+> Only the real-world drive-test traces are used. The accompanying ns-3 simulation
+> framework is not included in this analysis.
+
+> **Reference**: D. Raca, D. Leahy, C.J. Sreenan and J.J. Quinlan. *Beyond Throughput,
+> The Next Generation: A 5G Dataset with Channel and Context Metrics.* ACM Multimedia
+> Systems Conference (MMSys), Istanbul, Turkey, June 8–11, 2020.
 
 ## 📈 Model Performance
 
@@ -71,9 +85,9 @@ inherently feature-driven rather than sequence-driven.
 
 ## Known Limitations
 
-- **Evaluation set size mismatch**: LR/RF are evaluated on ~37,642 samples;
-  LSTM variants on ~36,783 (after session-boundary filtering). The difference
-  is negligible but noted for transparency.
+- **Evaluation set size mismatch**: LR/RF are evaluated on ~37,582 samples;
+  LSTM variants on ~36,783 / ~36,682 (after session-boundary filtering). The
+  difference is negligible but noted for transparency.
 
 ## Conclusion
 
