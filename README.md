@@ -54,6 +54,8 @@ Course project: data analysis and machine learning based prediction of 5G networ
 | LSTM             | 44,964   | 21,489  | 0.518  |
 | LSTM + lag       | 31,843   | 14,751  | 0.758  |
 
+![Model comparison](results/figures/model_comparison.png)
+
 ✅ **Random Forest is the recommended model.** This dataset is feature-driven rather
 than sequence-driven: the strongest predictive signal is lag-1 autocorrelation
 (0.89), which tree-based models exploit directly via engineered lag/rolling
@@ -62,6 +64,10 @@ radio-frequency (RF) signal measurements over a limited window, making them a le
 Even when provided with equivalent lag-based temporal features, LSTM (R²=0.758) still underperforms
 both Linear Regression (R²=0.799) and Random Forest (R²=0.908), confirming that this dataset is
 inherently feature-driven rather than sequence-driven.
+
+![RF actual vs predicted](results/figures/actual_vs_predicted_RF.png)
+
+![RF feature importance](results/figures/feature_importance.png)
 
 ## Known Limitations
 
