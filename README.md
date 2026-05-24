@@ -83,11 +83,20 @@ confirming that this dataset is inherently feature-driven rather than sequence-d
 
 ![RF feature importance](results/figures/feature_importance.png)
 
-## Known Limitations
+## Known Limitations (all resolved)
+
+- ~~**Rolling feature session boundary**: `add_rolling_features()` computed
+  rolling statistics without session-boundary isolation.~~ **Resolved** —
+  session-aware rolling via `timestamps` parameter prevents cross-session leakage.
+
+- ~~**Lag feature session boundary**: `add_lag_features()` had the same
+  cross-session leakage at drive-test boundaries.~~ **Resolved** — session-aware
+  lag via `timestamps` parameter prevents cross-session leakage.
 
 - **Evaluation set size mismatch**: LR/RF are evaluated on ~37,533 samples;
-  LSTM variants on ~36,783 / ~36,633 (after session-boundary filtering). The
-  difference is negligible but noted for transparency.
+  LSTM variants on ~36,783 / ~36,633 (after session-boundary filtering).
+  This is a deliberate trade-off: discarding cross-session sequences is
+  the correct behaviour, not a data leak.
 
 ## Conclusion
 
