@@ -141,7 +141,11 @@ def run():
     lstm_lag_preds = model.predict_lstm(lstm_lag_model, lstm_lag_scaler, X_test_l2,
                                          y_scaler=lstm_lag_y_scaler, timestamps=test_ts_l2)
 
-    # Evaluate on comparable test windows (LSTM discards seq_len rows + session breaks)
+    # Evaluate on comparable test windows.
+    # LR/RF:  y_test[seq_len:] = 37,681 samples after removing first seq_len rows.
+    # LSTM:   y_test_lstm_seq = 36,783 samples (also skips cross-session sequences).
+    # LSTM+lag: y_test_l2_seq = 36,781 samples (same).
+    # The ~900-sample gap is from session-boundary filtering, not a data leak.
     seq_len = config.LSTM_SEQUENCE_LENGTH
     y_test_eval = y_test[seq_len:]
     lr_metrics = evaluation.evaluate(y_test_eval, lr_preds[seq_len:])
@@ -172,15 +176,41 @@ def run():
 
     print("  -> actual vs predicted (RF)")
     visualization.plot_actual_vs_predicted(
-        y_test_eval, rf_preds[seq_len:], save_name="actual_vs_predicted.png"
+        y_test_eval, rf_preds[seq_len:], save_name="actual_vs_predicted_RF.png"
+    )
+
+    print("  -> actual vs predicted (LSTM)")
+    visualization.plot_actual_vs_predicted(
+        y_test_lstm_seq, lstm_preds, save_name="actual_vs_predicted_LSTM.png"
+    )
+
+    print("  -> actual vs predicted (LSTM+lag)")
+    visualization.plot_actual_vs_predicted(
+        y_test_l2_seq, lstm_lag_preds, save_name="actual_vs_predicted_LSTM_lag.png"
     )
 
     print("  -> residuals (RF)")
-    visualization.plot_residuals(y_test_eval, rf_preds[seq_len:], save_name="residuals.png")
+    visualization.plot_residuals(y_test_eval, rf_preds[seq_len:], save_name="residuals_RF.png")
+
+    print("  -> residuals (LSTM)")
+    visualization.plot_residuals(y_test_lstm_seq, lstm_preds, save_name="residuals_LSTM.png")
+
+    print("  -> residuals (LSTM+lag)")
+    visualization.plot_residuals(y_test_l2_seq, lstm_lag_preds, save_name="residuals_LSTM_lag.png")
 
     print("  -> error distribution (RF)")
     visualization.plot_error_distribution(
-        y_test_eval, rf_preds[seq_len:], save_name="error_distribution.png"
+        y_test_eval, rf_preds[seq_len:], save_name="error_distribution_RF.png"
+    )
+
+    print("  -> error distribution (LSTM)")
+    visualization.plot_error_distribution(
+        y_test_lstm_seq, lstm_preds, save_name="error_distribution_LSTM.png"
+    )
+
+    print("  -> error distribution (LSTM+lag)")
+    visualization.plot_error_distribution(
+        y_test_l2_seq, lstm_lag_preds, save_name="error_distribution_LSTM_lag.png"
     )
 
     print("  -> congestion timeline")
