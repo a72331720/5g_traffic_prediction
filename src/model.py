@@ -18,6 +18,8 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from . import config
 
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 FEATURE_COLUMNS = config.FEATURE_COLUMNS
 
 
@@ -193,7 +195,7 @@ def train_lstm(X_train, y_train, X_test, y_test,
         input_size=n_features,
         hidden_size=config.LSTM_HIDDEN_SIZE,
         num_layers=config.LSTM_NUM_LAYERS,
-    )
+    ).to(DEVICE)
     criterion = nn.MSELoss()
     optimiser = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -209,6 +211,7 @@ def train_lstm(X_train, y_train, X_test, y_test,
         model.train()
         epoch_loss = 0.0
         for xb, yb in train_loader:
+            xb, yb = xb.to(DEVICE), yb.to(DEVICE)
             optimiser.zero_grad()
             preds = model(xb)
             loss = criterion(preds, yb)
@@ -221,9 +224,9 @@ def train_lstm(X_train, y_train, X_test, y_test,
 
         model.eval()
         with torch.no_grad():
-            val_preds = model(torch.tensor(X_val_seq, dtype=torch.float32))
+            val_preds = model(torch.tensor(X_val_seq, dtype=torch.float32, device=DEVICE))
             val_loss = criterion(
-                val_preds, torch.tensor(y_val_seq, dtype=torch.float32)
+                val_preds, torch.tensor(y_val_seq, dtype=torch.float32, device=DEVICE)
             ).item()
         val_losses.append(val_loss)
 
@@ -261,8 +264,9 @@ def predict_lstm(model, scaler, X, y_scaler=None, seq_len=None,
     X_seq = prepare_lstm_sequences(X_sc, None, seq_len, timestamps=timestamps)
 
     model.eval()
+    model.to(DEVICE)
     with torch.no_grad():
-        preds_scaled = model(torch.tensor(X_seq, dtype=torch.float32)).numpy()
+        preds_scaled = model(torch.tensor(X_seq, dtype=torch.float32, device=DEVICE)).cpu().numpy()
     if y_scaler is not None:
         preds = y_scaler.inverse_transform(preds_scaled.reshape(-1, 1)).ravel()
     else:
