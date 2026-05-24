@@ -89,6 +89,9 @@ pip install -r requirements.txt
 python -m src.main
 ```
 
+Runs the full pipeline (~10–15 min). Figures are saved to `results/figures/`,
+trained models to `results/models/`.
+
 ## 📅 Timeline
 
 - Week 1–2: Dataset collection & initial research
