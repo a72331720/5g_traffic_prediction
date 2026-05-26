@@ -161,3 +161,4 @@ DOI: [10.1109/TMC.2021.3099397](https://doi.org/10.1109/TMC.2021.3099397)
 [5] G.A. Fernandez. "Machine Learning for Wireless Network Throughput
 Prediction." *Advances in Machine Learning & Artificial Intelligence*, vol. 5,
 no. 1, pp. 1–6, 2024.
+https://scholarworks.utrgv.edu/mss_fac/447/
