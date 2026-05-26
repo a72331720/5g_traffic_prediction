@@ -55,7 +55,7 @@ This project analyses real-world 5G drive-test data and builds machine learning 
 > Only the real-world drive-test traces are used. The accompanying ns-3 simulation
 > framework is not included in this analysis.
 
-> **Reference**: D. Raca, D. Leahy, C.J. Sreenan and J.J. Quinlan. *Beyond Throughput,
+> **Reference [1]**: D. Raca, D. Leahy, C.J. Sreenan and J.J. Quinlan. *Beyond Throughput,
 > The Next Generation: A 5G Dataset with Channel and Context Metrics.* ACM Multimedia
 > Systems Conference (MMSys), Istanbul, Turkey, June 8–11, 2020.
 
@@ -72,9 +72,11 @@ This project analyses real-world 5G drive-test data and builds machine learning 
 
 ✅ **Random Forest is the recommended model.** This dataset is feature-driven rather
 than sequence-driven: the strongest predictive signal is lag-1 autocorrelation
-(0.89), which tree-based models exploit directly via engineered lag/rolling
+(0.89), which tree-based models [2] exploit directly via engineered lag/rolling
 features. Recurrent architectures must learn the same patterns from raw noisy
-radio-frequency (RF) signal measurements over a limited window, making them a less natural fit here.
+radio-frequency (RF) signal measurements over a limited window, making them a
+less natural fit here. This aligns with broader evidence that tree ensembles
+often outperform deep learning on structured tabular data [3].
 Even when provided with equivalent lag-based temporal features, LSTM+lag (R²=0.719)
 still underperforms both Linear Regression (R²=0.799) and Random Forest (R²=0.909),
 confirming that this dataset is inherently feature-driven rather than sequence-driven.
@@ -110,7 +112,10 @@ LSTM instability further reinforces this conclusion: across PyTorch versions
 the same code and seed produce R² ranging from 0.39 to 0.52, while RF stays
 within 0.907–0.909 regardless of platform. For production 5G traffic
 prediction with tabular drive-test data, Random Forest is both the most
-accurate and most reliable choice.
+accurate and most reliable choice. Similar findings have been reported in
+prior work on ML-based throughput prediction in LTE and 5G networks [4],
+where RF-based approaches using RSRP, RSRQ, and RSSI features demonstrated
+strong predictive performance [5].
 
 ## 🚀 Quick Start
 
@@ -133,3 +138,26 @@ python -m src.main
 - Week 5–6: Model building & traffic prediction
 - Week 7: Visualization & result analysis
 - Week 8: Final report & presentation
+
+## 📚 References
+
+[1] D. Raca, D. Leahy, C.J. Sreenan and J.J. Quinlan. "Beyond Throughput, The
+Next Generation: A 5G Dataset with Channel and Context Metrics." *ACM Multimedia
+Systems Conference (MMSys)*, Istanbul, Turkey, June 2020.
+DOI: [10.1145/3339825.3394938](https://doi.org/10.1145/3339825.3394938)
+
+[2] L. Breiman. "Random Forests." *Machine Learning*, vol. 45, no. 1, pp. 5–32,
+2001. DOI: [10.1023/A:1010933404324](https://doi.org/10.1023/A:1010933404324)
+
+[3] R. Shwartz-Ziv and A. Armon. "Tabular Data: Deep Learning is Not All You
+Need." *Information Fusion*, vol. 81, pp. 84–90, 2022.
+DOI: [10.1016/j.inffus.2021.11.011](https://doi.org/10.1016/j.inffus.2021.11.011)
+
+[4] D. Minovski, N. Ögren, C. Åhlund and K. Mitra. "Throughput Prediction Using
+Machine Learning in LTE and 5G Networks." *IEEE Transactions on Mobile Computing*,
+vol. 22, no. 3, pp. 1825–1840, 2023.
+DOI: [10.1109/TMC.2021.3099397](https://doi.org/10.1109/TMC.2021.3099397)
+
+[5] G.A. Fernandez. "Machine Learning for Wireless Network Throughput
+Prediction." *Advances in Machine Learning & Artificial Intelligence*, vol. 5,
+no. 1, pp. 1–6, 2024.
