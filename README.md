@@ -31,7 +31,7 @@ This project analyses real-world 5G drive-test data and builds machine learning 
 
 | Member      | Role                                     |
 |-------------|------------------------------------------|
-| WANG JIARUI | Full pipeline: dataset selection & migration, preprocessing, feature engineering, model building (LR/RF/LSTM), evaluation, visualization, notebooks, video production |
+| WANG JIARUI | Full pipeline: dataset selection & migration, preprocessing, feature engineering, model building (LR/RF/LSTM), evaluation, visualization, notebooks, literature survey & references, video production |
 | LIU ZHENYI  | Dataset collection & initial research    |
 | REN XUHUI   | Report writing                           |
 | YANG XIAOLU | Presentation slides (PPT)                |
