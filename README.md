@@ -61,12 +61,12 @@ This project analyses real-world 5G drive-test data and builds machine learning 
 
 ## 📈 Model Performance
 
-| Model            | RMSE      | MAE     | R²     |
-|------------------|-----------|---------|--------|
-| Linear Regression | 28,998   | 13,086  | 0.799  |
-| Random Forest     | 19,538   | 8,086   | 0.909  |
-| LSTM             | 50,604   | 24,158  | 0.389  |
-| LSTM + lag       | 34,320   | 16,306  | 0.719  |
+| Model             | RMSE (kbps) | MAE (kbps) | R²     |
+|-------------------|-------------|------------|--------|
+| Linear Regression | 28,998      | 13,086     | 0.799  |
+| Random Forest     | 19,538      | 8,086      | 0.909  |
+| LSTM              | 50,604      | 24,158     | 0.389  |
+| LSTM + lag        | 34,320      | 16,306     | 0.719  |
 
 ![Model comparison](results/figures/model_comparison.png)
 
@@ -85,20 +85,22 @@ confirming that this dataset is inherently feature-driven rather than sequence-d
 
 ![RF feature importance](results/figures/feature_importance.png)
 
-## Known Limitations (all resolved)
+### Controlled Experiment: LSTM + Lag Features
 
-- ~~**Rolling feature session boundary**: `add_rolling_features()` computed
-  rolling statistics without session-boundary isolation.~~ **Resolved** —
-  session-aware rolling via `timestamps` parameter prevents cross-session leakage.
+To rule out that Random Forest's win comes purely from feature engineering
+rather than the model class itself, we trained an LSTM variant with the **same
+lag and rolling features** that RF uses (LSTM+lag). With identical features,
+LSTM+lag reaches R²=0.719 — still below both Random Forest (0.909) and Linear
+Regression (0.799). This isolates the cause: the gap is the model class, not
+feature deprivation. Sequence models cannot exploit lag-1 autocorrelation as
+efficiently as a tree split on the lag feature directly.
 
-- ~~**Lag feature session boundary**: `add_lag_features()` had the same
-  cross-session leakage at drive-test boundaries.~~ **Resolved** — session-aware
-  lag via `timestamps` parameter prevents cross-session leakage.
+## Methodology Notes
 
-- **Evaluation set size mismatch**: LR/RF are evaluated on ~37,533 samples;
-  LSTM variants on ~36,783 / ~36,633 (after session-boundary filtering).
-  This is a deliberate trade-off: discarding cross-session sequences is
-  the correct behaviour, not a data leak.
+- **Evaluation set size**: LR/RF are evaluated on ~37,533 samples; LSTM
+  variants on ~36,783 / ~36,633 (after session-boundary filtering). This is
+  a deliberate trade-off — discarding cross-session sequences is the correct
+  behaviour, not a data leak.
 
 ## Conclusion
 
