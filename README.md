@@ -193,7 +193,9 @@ python -m src.main
 
 ## 🎥 Video Demo
 
-*Coming soon — link will be added before submission.*
+[![5G Traffic Prediction Demo](https://img.youtube.com/vi/Xg4v0tDqcKo/maxresdefault.jpg)](https://www.youtube.com/watch?v=Xg4v0tDqcKo)
+
+📺 **Watch:** [https://www.youtube.com/watch?v=Xg4v0tDqcKo](https://www.youtube.com/watch?v=Xg4v0tDqcKo)
 
 ## 📁 Project Structure
 
