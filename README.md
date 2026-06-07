@@ -83,8 +83,8 @@ drive-test boundaries.
 ### Models
 
 - **Linear Regression** — baseline.
-- **Random Forest** — sklearn defaults (n_estimators=100); fed all engineered
-  features.
+- **Random Forest** — tuned via GridSearchCV (3-fold CV over n_estimators,
+  max_depth, min_samples_split); fed all engineered features.
 - **LSTM** — 2-layer, hidden=64, sequence length=60, batch=64, lr=0.001,
   ReduceLROnPlateau scheduler, MSE loss. Trained on raw channel + context only
   (no lag features), so it must learn the temporal signal from the sequence
@@ -135,7 +135,7 @@ autocorrelation as efficiently as a tree split on the lag feature directly.
 | **Accuracy on this dataset**    | R² 0.909               | R² 0.39–0.52                   | RF wins decisively |
 | **Reproducibility**             | ±0.002 across runs     | ±0.13 across PyTorch versions  | RF is platform-stable |
 | **Training cost**               | < 1 min CPU            | 15–20 min GPU / 30–60 min CPU  | RF is two orders cheaper |
-| **Model size on disk**          | < 1 MB (`.pkl`)        | ~220 MB (`lstm.pt`)            | RF deploys easily |
+| **Model size on disk**          | ~16 MB (`.pkl`)        | ~0.25 MB (`lstm.pt`)           | LSTM is lighter on disk but heavier to serve |
 | **Interpretability**            | Feature importance     | Opaque                         | RF gives operators a story |
 | **Scaling to longer histories** | Re-engineer lag/rolling| Native (extend `seq_len`)      | LSTM has the structural advantage — but it doesn't pay off here |
 | **Cold start (no history)**     | Falls back to channel features | Same                   | Both degrade; LSTM more so |
